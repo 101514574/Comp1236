@@ -1,0 +1,134 @@
+#!/bin/bash
+
+# Function to check if a number is triangular
+is_triangular() {
+    num=$1
+    local n=1
+    local triangular=0
+
+    while [ $triangular -lt $num ]; do
+        triangular=$(( n*(n+1)/2 ))
+        if [ $triangular -eq $num ]; then
+            return 0 # Number is triangular
+        fi
+        n=$(( n+1 ))
+    done
+    return 1 # Number is not triangular
+}
+
+# Function to find the sum of odd and even triangular numbers
+sum_odd_even_triangular() {
+    start=$1
+    end=$2
+    sum_odd=0
+    sum_even=0
+    count_odd=0
+    count_even=0
+
+    for (( i=start; i<=end; i++ )); do
+        is_triangular $i
+        if [ $? -eq 0 ]; then
+            if [ $((i % 2)) -eq 0 ]; then
+                sum_even=$(( sum_even + i ))
+                (( count_even++ ))
+                echo "$i (even)"
+            else
+                sum_odd=$(( sum_odd + i ))
+                (( count_odd++ ))
+                echo "$i (odd)"
+            fi
+        fi
+    done
+
+    echo "Total odd triangular numbers: $count_odd"
+    echo "Total even triangular numbers: $count_even"
+    echo "Sum of odd triangular numbers: $sum_odd"
+    echo "Sum of even triangular numbers: $sum_even"
+}
+
+# Function to find numbers that can be written as the product of two natural numbers in succession
+product_of_successive_numbers() {
+    start=$1
+    count=$2
+    x=$3
+
+    for (( i=start; count>0; i++ )); do
+        (( product = i * (i+1) ))
+        echo -n "$product "
+        if [ $(( x % product )) -eq 0 ]; then
+            echo "(Factor of $x)"
+        else
+            echo
+        fi
+        (( count-- ))
+    done
+}
+
+# Function to find terms of a sequence given by the rule Term = an^3 + bn + c
+sequence_terms() {
+    a=$1
+    b=$2
+    c=$3
+    start=$4
+    end=$5
+
+    product=$(( a*start*start*start + b*start + c ))
+    for (( i=start; i<=end; i++ )); do
+        term=$(( a*i*i*i + b*i + c ))
+        echo -n "$term "
+    done
+    echo
+
+    if [ $(( product % 4 )) -eq 0 ]; then
+        echo "Product of first and last term ($product) is a multiple of 4"
+    else
+        echo "Product of first and last term ($product) is not a multiple of 4"
+    fi
+}
+
+# Main menu
+echo "Welcome to the COMP1236 Group Project"
+read -p "Please enter your password: " password
+
+# Password validation
+if [ "$password" != "COMP1236" ] && [ "$password" != "Comp1236" ]; then
+    echo "Incorrect password. Exiting..."
+    exit 1
+fi
+
+while true; do
+    echo "Menu:"
+    echo "T - Triangular Numbers"
+    echo "N - Numbers as Product of Two Successive Numbers"
+    echo "S - Sequence Terms"
+    read -p "Please enter your choice (T/N/S): " choice
+
+    case $choice in
+        T|t)
+            echo "Triangular Numbers selected"
+            read -p "Enter the start and end of the range: " start end
+            sum_odd_even_triangular $start $end
+            ;;
+        N|n)
+            echo "Numbers as Product of Two Successive Numbers selected"
+            read -p "Enter the starting number and count: " start count
+            read -p "Enter a number (x): " x
+            product_of_successive_numbers $start $count $x
+            ;;
+        S|s)
+            echo "Sequence Terms selected"
+            read -p "Enter values of a, b, c, and range [n1, n2]: " a b c start end
+            sequence_terms $a $b $c $start $end
+            ;;
+        *)
+            echo "Invalid choice. Please select again."
+            continue
+            ;;
+    esac
+
+    read -p "Do you want to continue? (Y/N): " continue_choice
+    if [ "$continue_choice" != "Y" ] && [ "$continue_choice" != "y" ]; then
+        echo "Exiting..."
+        break
+    fi
+done
